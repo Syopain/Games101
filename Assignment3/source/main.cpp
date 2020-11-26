@@ -337,7 +337,6 @@ int main(int argc, const char** argv)
     std::vector<Triangle*> TriangleList;
 
     float angle = 140.0;
-    //float angle = 0;
     bool command_line = false;
 
     std::string filename = "output.png";

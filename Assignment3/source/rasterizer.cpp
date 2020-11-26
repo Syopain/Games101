@@ -163,14 +163,14 @@ static bool insideTriangle(int x, int y, const Vector4f* _v){
     return false;
 }
 
-static bool insideTriangle(float x, float y, const Triangle& t)
+static bool insideTriangle(int x, int y, const Triangle& t)
 {
     // Implement this function to check if the point (x, y) is inside the triangle represented by t
     auto _v = t.toVector4();
     Vector3f v[3];
     for(int i=0;i<3;i++)
         v[i] = {_v[i].x(),_v[i].y(), 1.0};
-    Vector3f point(x, y, 0);
+    Vector3f point(x, y, 1.f);
     return (v[1] - v[0]).cross(point - v[0]).z() * (v[2] - v[1]).cross(point - v[1]).z() > 0 &&
            (v[0] - v[2]).cross(point - v[2]).z() * (v[2] - v[1]).cross(point - v[1]).z() > 0;
 }
@@ -291,8 +291,7 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
     // iterate through the pixel and find if the current pixel is inside the triangle
     for (int x = leftTop.x(); x < rightBottom.x(); ++x) {
         for (int y = leftTop.y(); y < rightBottom.y(); ++y) {
-            auto msaa = insideTriangle(x, y, t);
-            if (msaa) {
+            if (insideTriangle(x, y, t)) {
                 // If so, use the following code to get the interpolated z value.
                 // Inside your rasterization loop:
                 //    * v[i].w() is the vertex view space depth value z.
@@ -318,9 +317,9 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
                     auto interpolated_normal = alpha * t.normal[0] + beta * t.normal[1] + gamma * t.normal[2];
                     auto interpolated_texcoords = alpha * t.tex_coords[0] + beta * t.tex_coords[1] + gamma * t.tex_coords[2];
                     auto interpolated_shadingcoords = alpha * view_pos[0] + beta * view_pos[1] + gamma * view_pos[2];
-                    if (interpolated_texcoords.x() > 1 || interpolated_texcoords.y() > 1) {
+                    /*if (interpolated_texcoords.x() > 1 || interpolated_texcoords.y() > 1) {
                         std::cout << "";
-                    }
+                    }*/
                     // Use: fragment_shader_payload payload( interpolated_color, interpolated_normal.normalized(), interpolated_texcoords, texture ? &*texture : nullptr);
                     // Use: payload.view_pos = interpolated_shadingcoords;
                     // Use: Instead of passing the triangle's color directly to the frame buffer, pass the color to the shaders first to get the final color;
@@ -333,7 +332,6 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t, const std::array<Eig
             }
         }
     }
-
 }
 
 void rst::rasterizer::set_model(const Eigen::Matrix4f& m)
